@@ -7,8 +7,6 @@
 
 一键将 [Codex Desktop](https://github.com/openai/codex) 界面切换为**简体中文**，面向 Windows 用户，操作简单。
 
-参考了 [claude-desktop-zh-cn](https://github.com/javaht/claude-desktop-zh-cn) 的补丁思路，针对 Codex 内置中文资源做了适配，并补全了**顶部菜单**（文件 / 编辑 / 查看 / 窗口 / 帮助）、**内置插件 metadata** 等仍可能显示英文的部分。
-
 ## 快速开始
 
 1. 下载 [Release v0.1.0](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0) 并解压，或克隆本仓库
@@ -32,12 +30,6 @@
 | **Q** | 退出 |
 
 恢复英文：在同一菜单中选择 **[2] 恢复英文 / 重置**。
-
-## 环境要求
-
-- Windows 10 / 11
-- 已安装 Codex Desktop（已测试版本：`26.519.81530`）
-- 已安装 [Node.js](https://nodejs.org/) 18+
 
 ## 汉化范围
 
