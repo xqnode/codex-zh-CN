@@ -1,5 +1,7 @@
 # Codex Desktop 简体中文语言包
 
+> Windows 版 Codex Desktop 简体中文语言包，一键安装汉化。
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Release](https://img.shields.io/badge/release-v0.1.0-green.svg)](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0)
 
