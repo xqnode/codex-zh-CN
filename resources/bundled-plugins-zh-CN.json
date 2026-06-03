@@ -1,0 +1,31 @@
+{
+  "browser": {
+    "displayName": "浏览器",
+    "shortDescription": "使用 Codex 控制应用内浏览器",
+    "longDescription": "浏览器插件让 Codex 可以打开并控制应用内浏览器，主要用于本地开发页面和文件。可用于导航、检查、点击、输入，以及在 Codex 内测试页面时截图。",
+    "category": "工程",
+    "defaultPrompt": ["在 localhost 上测试我的结账流程"]
+  },
+  "chrome": {
+    "displayName": "Chrome",
+    "shortDescription": "使用 Codex 控制 Chrome",
+    "longDescription": "Chrome 插件让 Codex 使用你的 Chrome 浏览器处理需要现有浏览器状态的任务，包括已打开的标签页、页面内容以及你已登录的网站。它可以在工作时导航、查看、点击、输入和截图。你始终掌控一切：Codex 在与新网站交互前会先询问，你可以随时停止操作，并可在设置中管理或移除 Chrome 访问权限。浏览器内容可能包含来自已登录网站的敏感信息。使用此插件产生的浏览器数据可能会用于训练，具体取决于你的 OpenAI 账户数据控制设置。",
+    "category": "效率",
+    "defaultPrompt": [
+      "帮我整理报销",
+      "查看我在社交媒体上的消息",
+      "在 Workday 中提交休假申请"
+    ]
+  },
+  "latex": {
+    "displayName": "LaTeX",
+    "shortDescription": "使用 Tectonic 或 TeX Live 编译 LaTeX",
+    "longDescription": "适用于 Codex 的 LaTeX 工作流：简单项目优先使用内置 Tectonic，完整项目则回退到已检测到的 TeX Live 或 MacTeX；会验证本地 LaTeX 环境，且仅在没有可用系统安装时才可选安装 Codex 管理的完整 TeX Live 运行时。",
+    "category": "研究",
+    "defaultPrompt": [
+      "使用 latex-doctor 检查此机器是否可以编译 LaTeX。",
+      "使用 latex-compile 编译此项目的主 TeX 文件，简单项目优先尝试 Tectonic。",
+      "仅当未检测到现有 TeX Live 时，才使用 texlive-runtime-installer 安装托管的完整 TeX Live。"
+    ]
+  }
+}
