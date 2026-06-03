@@ -31,7 +31,7 @@
 | **5** | 手动指定 / 清除 Codex 安装路径 |
 | **Q** | 退出 |
 
-`uninstall-windows.bat` 也会打开同一交互菜单，可在其中选择 **[2] 恢复英文 / 重置**。
+恢复英文：在同一菜单中选择 **[2] 恢复英文 / 重置**。
 
 ## 环境要求
 
@@ -67,8 +67,7 @@ Codex 更新可能覆盖 `app.asar` 或插件缓存。若界面变回英文，**
 
 | 文件 | 说明 |
 |------|------|
-| `install-windows.bat` | 入口：打开 PowerShell 交互菜单 |
-| `uninstall-windows.bat` | 同上，用于恢复英文 |
+| `install-windows.bat` | 唯一入口：打开 PowerShell 交互菜单（安装 / 重置 / 验证等） |
 | `scripts/install_windows.ps1` | 交互式安装器 |
 | `scripts/patch-codex-zh-cn.mjs` | 补丁核心逻辑 |
 | `resources/native-menu-zh-CN.json` | 原生菜单中文翻译 |
