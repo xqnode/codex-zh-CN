@@ -65,6 +65,7 @@ Codex 更新可能覆盖 `app.asar` 或插件缓存。若界面变回英文，**
 | 文件 | 说明 |
 |------|------|
 | `install-windows.bat` | 唯一入口：打开 PowerShell 交互菜单（安装 / 重置 / 验证等） |
+| `uninstall-codex.bat` | 彻底卸载 Codex（Store 包 + 数据目录，需管理员，纯英文脚本） |
 | `Codex 汉化版.vbs` | 安装后生成于本目录，无黑窗启动汉化版 |
 | `Codex 汉化版.bat` | 安装后生成的备用启动脚本 |
 | `launchers/` | 启动脚本模板（安装时复制到项目根目录） |
