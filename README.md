@@ -9,12 +9,18 @@
 
 ## 快速开始
 
-1. 下载 [Release v0.1.0](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0) 并解压，或克隆本仓库
+1. 下载 [Release v0.1.0](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0) 并解压，或克隆本仓库  
+   - 也可单独下载附件 **`Codex 汉化版.vbs`** / **`Codex 汉化版.bat`**（需先完成汉化安装）
 2. **完全退出** Codex Desktop（任务栏右键退出，不要只关窗口）
-3. 双击 `install-windows.bat`（会打开 PowerShell 窗口）
-4. 在交互菜单中选择 **[1] 安装汉化**
+3. 双击 `install-windows.bat`（会先弹出 **UAC 管理员授权**，请点击「是」）
+4. 在交互菜单中选择 **[1] 安装汉化**（若 Codex 正在运行会先自动关闭，汉化完成后自动重启）
+5. **Microsoft Store 版**：日常使用请双击桌面 **「Codex 汉化版」**（`.vbs`，无 cmd 黑窗；不要用开始菜单里的 Store 原版快捷方式）
+
+> Store 版 `WindowsApps` 目录受系统保护，无法原地修改。汉化会复制到 `%USERPROFILE%\.codex\zh-cn-patched\` 并在桌面生成 `.vbs` / `.bat` 启动脚本（推荐 `.vbs`）。
 
 若界面仍是英文，打开 **Settings → General → Language**，选择 **中文（中国）**。
+
+若提示 `app.asar 缺失`，请在 Microsoft Store 中对 Codex 执行 **修复/重置** 后重新安装汉化。
 
 ## 交互菜单
 
@@ -41,7 +47,7 @@
 
 ## 脚本会做什么
 
-1. 自动查找 Codex 安装目录（运行中的进程 / 常见安装路径）
+1. 自动查找 Codex 安装目录（见下方「安装目录识别」）
 2. 备份 `resources/app.asar` 和 `Codex.exe`
 3. 写入完整 `native-menu-locales/zh-CN.json`
 4. 汉化主进程硬编码菜单
@@ -60,11 +66,33 @@ Codex 更新可能覆盖 `app.asar` 或插件缓存。若界面变回英文，**
 | 文件 | 说明 |
 |------|------|
 | `install-windows.bat` | 唯一入口：打开 PowerShell 交互菜单（安装 / 重置 / 验证等） |
+| `launchers/Codex 汉化版.vbs` | 无黑窗启动汉化版（读取 `.codex\zh-cn-patched-active.txt`） |
+| `launchers/Codex 汉化版.bat` | 备用启动脚本（同上） |
 | `scripts/install_windows.ps1` | 交互式安装器 |
 | `scripts/patch-codex-zh-cn.mjs` | 补丁核心逻辑 |
 | `resources/native-menu-zh-CN.json` | 原生菜单中文翻译 |
 | `resources/menu-hardcoded-zh-CN.json` | 主进程硬编码菜单替换表 |
 | `resources/bundled-plugins-zh-CN.json` | 内置插件显示名称与描述 |
+
+## 安装目录识别
+
+只要目录结构满足以下任一形式即可识别（与安装位置无关）：
+
+| 布局 | 示例 |
+|------|------|
+| 便携版 / 解压版 | `...\resources\app.asar` |
+| Microsoft Store (MSIX) | `...\OpenAI.Codex_*\app\resources\app.asar` |
+
+自动检测顺序（由高到低）：
+
+1. 命令行 `--codex-path` 或菜单 **[5] 手动指定**（会保存到 `%USERPROFILE%\.codex\codex-desktop-path.txt`）
+2. 环境变量 `CODEX_DESKTOP_PATH` / `CODEX_ZH_CN_PATH`
+3. 正在运行的 `Codex` / `codex` 进程路径（向上查找 `app.asar`）
+4. Microsoft Store：`WindowsApps\OpenAI.Codex_*`（含 `Get-AppxPackage`）
+5. 注册表卸载项中的 `InstallLocation`（显示名为 Codex 的官方安装）
+6. 常见父目录下名为 `Codex*` / `OpenAI.Codex*` 的子目录：`%LOCALAPPDATA%\Programs`、`%ProgramFiles%\Codex`、`D:\soft`、`E:\soft`、桌面、下载目录等
+
+自定义路径可填 **MSIX 包根目录**（含 `app` 子目录的那一层）或 **含 `resources\app.asar` 的 app 目录**。
 
 ## 命令行（可选）
 
@@ -72,8 +100,12 @@ Codex 更新可能覆盖 `app.asar` 或插件缓存。若界面变回英文，**
 # 环境检测
 powershell -File scripts\install_windows.ps1 -Action status
 
-# 非交互安装
-powershell -File scripts\install_windows.ps1 -Action install -CodexPath "D:\path\to\Codex"
+# 非交互安装（便携目录或 MSIX 包根目录均可）
+powershell -File scripts\install_windows.ps1 -Action install -CodexPath "D:\path\to\Codex-win-x64-xxx"
+powershell -File scripts\install_windows.ps1 -Action install -CodexPath "C:\Program Files\WindowsApps\OpenAI.Codex_26.xxx_x64__2p2nqsd0c76g0"
+
+# 环境变量（当前终端会话）
+$env:CODEX_DESKTOP_PATH = "D:\tools\Codex-win-x64-xxx"
 
 # 非交互重置
 powershell -File scripts\install_windows.ps1 -Action uninstall -CodexPath "D:\path\to\Codex"
