@@ -54,6 +54,7 @@
   "codex.commandMenuTitle.showKeyboardShortcuts": "显示键盘快捷键",
   "codex.commandMenuTitle.openFolder": "打开文件夹",
   "codex.commandMenuTitle.toggleSidebar": "切换边栏",
+  "codex.commandMenuTitle.toggleBottomPanel": "切换底部面板",
   "codex.commandMenuTitle.toggleTerminal": "切换终端",
   "codex.commandMenuTitle.openBrowserTab": "打开浏览器标签页",
   "codex.commandMenuTitle.toggleBrowserPanel": "显示/隐藏浏览器面板",

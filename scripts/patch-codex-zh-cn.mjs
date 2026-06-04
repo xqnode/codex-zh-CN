@@ -645,15 +645,29 @@ function launchCodexViaScript(scriptPath) {
   });
 }
 
+function getInstallLauncherPaths() {
+  return {
+    vbs: path.join(projectRoot, "Codex 汉化版.vbs"),
+    bat: path.join(projectRoot, "Codex 汉化版.bat"),
+  };
+}
+
+function removeStaleDesktopLaunchers() {
+  const desktopDir = path.join(os.homedir(), "Desktop");
+  for (const name of ["Codex 汉化版.vbs", "Codex 汉化版.bat"]) {
+    const target = path.join(desktopDir, name);
+    if (!fs.existsSync(target)) continue;
+    try {
+      fs.unlinkSync(target);
+      logInfo(`已移除桌面旧启动脚本: ${target}`);
+    } catch {
+      logInfo(`请手动删除桌面上的: ${name}`);
+    }
+  }
+}
+
 function startCodex(app, patchedRoot, mode) {
-  const desktopVbs = path.join(os.homedir(), "Desktop", "Codex 汉化版.vbs");
-  const desktopBat = path.join(os.homedir(), "Desktop", "Codex 汉化版.bat");
-  const patchedVbs = patchedRoot
-    ? path.join(patchedRoot, "启动 Codex 汉化版.vbs")
-    : null;
-  const patchedBat = patchedRoot
-    ? path.join(patchedRoot, "启动 Codex 汉化版.bat")
-    : null;
+  const { vbs: installVbs, bat: installBat } = getInstallLauncherPaths();
 
   if (mode === "store-copy") {
     const exePath = findPatchedCodexExe(app);
@@ -663,7 +677,7 @@ function startCodex(app, patchedRoot, mode) {
       console.log(`[codex-launch] ${exePath}`);
       return;
     }
-    const scriptLauncher = [patchedVbs, desktopVbs, patchedBat, desktopBat].find(
+    const scriptLauncher = [installVbs, installBat].find(
       (candidate) => candidate && fs.existsSync(candidate)
     );
     if (scriptLauncher) {
@@ -682,7 +696,7 @@ function startCodex(app, patchedRoot, mode) {
     return;
   }
 
-  const scriptLauncher = [patchedVbs, desktopVbs, patchedBat, desktopBat].find(
+  const scriptLauncher = [installVbs, installBat].find(
     (candidate) => candidate && fs.existsSync(candidate)
   );
   if (scriptLauncher) {
@@ -1256,7 +1270,7 @@ function resolvePatchTarget(installInfo, options = {}) {
   };
 }
 
-function writePatchedLauncher(patchedApp, patchedRoot) {
+function writePatchedLauncher(patchedApp) {
   if (!findPatchedCodexExe(patchedApp)) {
     throw new Error("副本中未找到 Codex.exe / codex.exe，无法创建启动脚本。");
   }
@@ -1268,23 +1282,15 @@ function writePatchedLauncher(patchedApp, patchedRoot) {
     throw new Error("缺少 launchers/Codex 汉化版.vbs 或 .bat 模板文件。");
   }
 
-  const launcherVbs = path.join(patchedRoot, "启动 Codex 汉化版.vbs");
-  const launcherBat = path.join(patchedRoot, "启动 Codex 汉化版.bat");
-  fs.copyFileSync(templateVbs, launcherVbs);
-  fs.copyFileSync(templateBat, launcherBat);
+  const { vbs: installVbs, bat: installBat } = getInstallLauncherPaths();
+  fs.copyFileSync(templateVbs, installVbs);
+  fs.copyFileSync(templateBat, installBat);
+  removeStaleDesktopLaunchers();
 
-  const desktopVbs = path.join(os.homedir(), "Desktop", "Codex 汉化版.vbs");
-  const desktopBat = path.join(os.homedir(), "Desktop", "Codex 汉化版.bat");
-  try {
-    fs.copyFileSync(templateVbs, desktopVbs);
-    fs.copyFileSync(templateBat, desktopBat);
-    console.log(`[ok] 已在桌面创建无黑窗启动: ${desktopVbs}`);
-    console.log(`[ok] 备用启动脚本（.bat）: ${desktopBat}`);
-  } catch {
-    console.log(`[ok] 请使用启动脚本打开汉化版: ${launcherVbs}`);
-  }
+  logOk(`汉化版启动脚本已写入安装目录: ${installVbs}`);
+  logOk(`备用启动脚本: ${installBat}`);
   console.log(
-    "[info] 请双击桌面「Codex 汉化版」（.vbs）启动；脚本会读取 %USERPROFILE%\\.codex\\zh-cn-patched-active.txt 定位汉化副本。"
+    `[info] 请在本目录双击「Codex 汉化版.vbs」启动（与 install-windows.bat 同目录）；勿用 Store 原版快捷方式。`
   );
 }
 
@@ -1580,7 +1586,7 @@ function install(options) {
   }
 
   if (mode === "store-copy") {
-    writePatchedLauncher(app, patchedRoot);
+    writePatchedLauncher(app);
     console.log(`[codex-app] ${app}`);
     logOk("汉化补丁已写入副本。");
   } else {
@@ -1732,12 +1738,9 @@ function buildStatusReport(options) {
     );
     if (isWindowsAppsInstall(installInfo.app)) {
       report.messages.push(
-        "检测到 Microsoft Store 安装：将在 %USERPROFILE%\\.codex\\zh-cn-patched\\ 维护可写副本，请用「Codex 汉化版」启动。"
+        "检测到 Microsoft Store 安装：将在 %USERPROFILE%\\.codex\\zh-cn-patched\\ 维护可写副本；请用安装目录下的「Codex 汉化版.vbs」启动。"
       );
-      const launcher = path.join(
-        getPatchedAppRoot(installInfo.app),
-        "启动 Codex 汉化版.vbs"
-      );
+      const { vbs: launcher } = getInstallLauncherPaths();
       if (fs.existsSync(launcher)) {
         report.messages.push(`汉化启动脚本: ${launcher}`);
       }

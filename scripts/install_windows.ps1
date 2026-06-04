@@ -46,6 +46,44 @@ function Test-NodeAvailable {
     return [bool](Get-Command node -ErrorAction SilentlyContinue)
 }
 
+function Test-IsAdministrator {
+    $principal = New-Object Security.Principal.WindowsPrincipal(
+        [Security.Principal.WindowsIdentity]::GetCurrent()
+    )
+    return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
+function Invoke-ElevatedInstaller {
+    param(
+        [string[]]$ExtraArgs = @()
+    )
+
+    $psArgs = @(
+        "-NoProfile",
+        "-ExecutionPolicy", "Bypass",
+        "-File", "`"$PSCommandPath`""
+    ) + $ExtraArgs
+
+    Write-Host ""
+    Write-Host "  需要管理员权限，正在请求 UAC 提升..." -ForegroundColor Yellow
+    Write-Host "  请在弹窗中点击「是」。" -ForegroundColor DarkGray
+    Write-Host ""
+
+    Start-Process -FilePath "powershell.exe" `
+        -Verb RunAs `
+        -WorkingDirectory $projectRoot `
+        -ArgumentList $psArgs
+    exit 0
+}
+
+function Ensure-Administrator {
+    if (Test-IsAdministrator) { return }
+    $extra = @("-Action", $Action)
+    if ($CodexPath) { $extra += @("-CodexPath", $CodexPath) }
+    if ($NoPause) { $extra += "-NoPause" }
+    Invoke-ElevatedInstaller -ExtraArgs $extra
+}
+
 function Get-StatusReport {
     param([string]$CustomCodexPath = "")
 
@@ -94,9 +132,9 @@ function Show-StatusReport {
     }
 
     if ($Report.codexRunning) {
-        Write-WarnLine "Codex 正在运行"
+        Write-WarnLine "Codex 正在运行（安装汉化时会自动关闭，完成后自动重启）"
     } else {
-        Write-InfoLine "Codex 当前未运行"
+        Write-InfoLine "Codex 当前未运行（汉化完成后将自动启动）"
     }
 
     if ($Report.asarLocalized) {
@@ -161,29 +199,38 @@ function Invoke-PatchAction {
         $argsList += @("--codex-path", $CustomCodexPath)
     }
 
-    $patchOutput = & node @argsList 2>&1
-    $patchOutput | ForEach-Object { Write-Host $_ }
+    Write-InfoLine "安装进度将实时显示在下方，复制文件时可能需 2–5 分钟，请勿关闭窗口。"
+    $patchLines = [System.Collections.Generic.List[string]]::new()
+    & node @argsList 2>&1 | ForEach-Object {
+        $line = "$_"
+        if ($line -match '^\[progress-bar\]') {
+            Write-Host $line -ForegroundColor Magenta
+        } elseif ($line -match '^\[step \d+/\d+\]' -or $line -match '^\[progress\]') {
+            Write-Host $line -ForegroundColor Cyan
+        } elseif ($line -match '^\[ok\]' -or $line -match '^\[OK\]') {
+            Write-Host $line -ForegroundColor Green
+        } elseif ($line -match '^\[warn\]' -or $line -match '^\[error\]' -or $line -match '^\[X\]') {
+            Write-Host $line -ForegroundColor Yellow
+        } else {
+            Write-Host $line
+        }
+        [void]$patchLines.Add($line)
+    }
     if ($LASTEXITCODE -ne 0) {
         throw "操作失败，退出码 $LASTEXITCODE"
     }
 
     if ($PatchAction -eq "install" -and $LaunchCodex) {
-        $codexApp = $null
-        foreach ($line in $patchOutput) {
-            if ($line -match '^\[codex-app\]\s+(.+)$') {
-                $codexApp = $Matches[1].Trim()
+        $launched = $false
+        foreach ($line in $patchLines) {
+            if ($line -match '^\[codex-launch\]\s+(.+)$') {
+                Write-Ok "已重新启动 Codex: $($Matches[1].Trim())"
+                $launched = $true
                 break
             }
         }
-        if (-not $codexApp -and $CustomCodexPath) {
-            $codexApp = $CustomCodexPath
-        }
-        if ($codexApp) {
-            $codexExe = Join-Path $codexApp "Codex.exe"
-            if (Test-Path $codexExe) {
-                Start-Process -FilePath $codexExe | Out-Null
-                Write-Ok "已启动 Codex Desktop"
-            }
+        if (-not $launched) {
+            Write-InfoLine "汉化已完成；若 Codex 未自动打开，请双击与 install-windows.bat 同目录下的「Codex 汉化版.vbs」启动。"
         }
     }
 }
@@ -276,10 +323,15 @@ function Start-InteractiveMenu {
                     continue
                 }
                 Write-Step "【安装汉化】"
+                if ($report.codexRunning) {
+                    Write-WarnLine "检测到 Codex 正在运行，将先自动关闭，汉化后再自动重启。"
+                } else {
+                    Write-InfoLine "Codex 未运行；汉化完成后将自动启动。"
+                }
                 try {
+                    Write-InfoLine "正在执行汉化，请稍候…"
                     Invoke-PatchAction -PatchAction "install" -CustomCodexPath $customCodexPath -LaunchCodex
                     Write-Ok "汉化安装完成"
-                    Write-InfoLine "若界面未立即切换，请完全退出 Codex 后重新打开。"
                 } catch {
                     Write-Bad $_.Exception.Message
                 }
@@ -319,14 +371,30 @@ function Start-InteractiveMenu {
             "path" {
                 if ($customCodexPath) {
                     $customCodexPath = ""
+                    & node @($patchScript, "clear-path") | Out-Null
                     Write-Ok "已清除自定义 Codex 路径，将自动检测。"
                 } else {
-                    $inputPath = (Read-Host "请输入 Codex 安装目录（例如 D:\soft\Codex-win-x64-xxx）").Trim('"')
-                    if ($inputPath -and (Test-Path (Join-Path $inputPath "resources\app.asar"))) {
-                        $customCodexPath = $inputPath
-                        Write-Ok "已设置 Codex 路径: $customCodexPath"
+                    $inputPath = (Read-Host "请输入 Codex 安装目录（MSIX 包根目录或 app 子目录，例如 C:\Program Files\WindowsApps\OpenAI.Codex_...）").Trim('"')
+                    $asarOk = $false
+                    $resolvedPath = $inputPath
+                    if ($inputPath) {
+                        if (Test-Path (Join-Path $inputPath "resources\app.asar")) {
+                            $asarOk = $true
+                        } elseif (Test-Path (Join-Path $inputPath "app\resources\app.asar")) {
+                            $asarOk = $true
+                            $resolvedPath = Join-Path $inputPath "app"
+                        }
+                    }
+                    if ($asarOk) {
+                        $customCodexPath = $resolvedPath
+                        & node @($patchScript, "save-path", "--codex-path", $customCodexPath) | Out-Null
+                        if ($LASTEXITCODE -ne 0) {
+                            Write-WarnLine "路径已用于本次会话，但未能写入持久化配置"
+                        } else {
+                            Write-Ok "已设置 Codex 路径（已保存，下次自动识别）: $customCodexPath"
+                        }
                     } else {
-                        Write-Bad "路径无效，或未找到 resources\app.asar"
+                        Write-Bad "路径无效，或未找到 resources\app.asar（或 app\resources\app.asar）"
                     }
                 }
                 if (-not $NoPause) { Read-Host "按 Enter 返回菜单" | Out-Null }
@@ -345,8 +413,13 @@ if (-not (Test-Path $patchScript)) {
 }
 
 if ($Interactive -or $Action -eq "menu") {
+    Ensure-Administrator
     Start-InteractiveMenu
     exit 0
+}
+
+if ($Action -in @("install", "uninstall", "verify")) {
+    Ensure-Administrator
 }
 
 switch ($Action) {

@@ -1,4 +1,30 @@
 {
+  "__marketplace__openai-bundled": {
+    "displayName": "OpenAI 内置"
+  },
+  "computer-use": {
+    "displayName": "计算机使用",
+    "shortDescription": "使用 Codex 控制 Windows 应用",
+    "longDescription": "Windows 计算机使用功能让 Codex 可使用你电脑上的应用，包括浏览器和你允许访问的文件。工作时可能会截图或读取页面内容。你始终掌控一切：可自行选择允许访问的应用，随时停止操作，并控制是否将截图用于训练。",
+    "category": "效率"
+  },
+  "sites": {
+    "displayName": "站点",
+    "shortDescription": "使用 Codex 构建和部署站点",
+    "category": "效率"
+  },
+  "spreadsheets": {
+    "displayName": "电子表格",
+    "shortDescription": "创建和编辑电子表格文件",
+    "longDescription": "在本地创建、编辑、检查、渲染、验证并导出 XLSX、CSV、TSV 电子表格，也可为 Google 表格交接生成本地 XLSX。当最终产出或目标是表格、工作簿、工作表或 CSV 时使用本插件。",
+    "category": "效率"
+  },
+  "presentations": {
+    "displayName": "演示文稿",
+    "shortDescription": "创建和编辑演示文稿",
+    "longDescription": "在本地创建、编辑、检查、渲染、验证并导出演示幻灯片，包括 PPTX 制作与 Google 幻灯片交接指引。当最终产出或目标是演示稿、幻灯片、PPT 或 Google 幻灯片时使用本插件。",
+    "category": "效率"
+  },
   "browser": {
     "displayName": "浏览器",
     "shortDescription": "使用 Codex 控制应用内浏览器",

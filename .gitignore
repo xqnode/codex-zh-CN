@@ -4,3 +4,5 @@ install-windows.log
 *.log
 .DS_Store
 Thumbs.db
+/Codex 汉化版.vbs
+/Codex 汉化版.bat

@@ -9,14 +9,13 @@
 
 ## 快速开始
 
-1. 下载 [Release v0.1.0](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0) 并解压，或克隆本仓库  
-   - 也可单独下载附件 **`Codex 汉化版.vbs`** / **`Codex 汉化版.bat`**（需先完成汉化安装）
+1. 下载 [Release v0.1.0](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0) 并解压，或克隆本仓库
 2. **完全退出** Codex Desktop（任务栏右键退出，不要只关窗口）
 3. 双击 `install-windows.bat`（会先弹出 **UAC 管理员授权**，请点击「是」）
 4. 在交互菜单中选择 **[1] 安装汉化**（若 Codex 正在运行会先自动关闭，汉化完成后自动重启）
-5. **Microsoft Store 版**：日常使用请双击桌面 **「Codex 汉化版」**（`.vbs`，无 cmd 黑窗；不要用开始菜单里的 Store 原版快捷方式）
+5. **Microsoft Store 版**：日常使用请在与 `install-windows.bat` **同一目录**双击 **「Codex 汉化版.vbs」**（无 cmd 黑窗；不要用开始菜单里的 Store 原版快捷方式）
 
-> Store 版 `WindowsApps` 目录受系统保护，无法原地修改。汉化会复制到 `%USERPROFILE%\.codex\zh-cn-patched\` 并在桌面生成 `.vbs` / `.bat` 启动脚本（推荐 `.vbs`）。
+> Store 版 `WindowsApps` 目录受系统保护，无法原地修改。汉化会复制到 `%USERPROFILE%\.codex\zh-cn-patched\`，并在安装目录生成 `Codex 汉化版.vbs` / `.bat`（推荐 `.vbs`）。
 
 若界面仍是英文，打开 **Settings → General → Language**，选择 **中文（中国）**。
 
@@ -66,8 +65,9 @@ Codex 更新可能覆盖 `app.asar` 或插件缓存。若界面变回英文，**
 | 文件 | 说明 |
 |------|------|
 | `install-windows.bat` | 唯一入口：打开 PowerShell 交互菜单（安装 / 重置 / 验证等） |
-| `launchers/Codex 汉化版.vbs` | 无黑窗启动汉化版（读取 `.codex\zh-cn-patched-active.txt`） |
-| `launchers/Codex 汉化版.bat` | 备用启动脚本（同上） |
+| `Codex 汉化版.vbs` | 安装后生成于本目录，无黑窗启动汉化版 |
+| `Codex 汉化版.bat` | 安装后生成的备用启动脚本 |
+| `launchers/` | 启动脚本模板（安装时复制到项目根目录） |
 | `scripts/install_windows.ps1` | 交互式安装器 |
 | `scripts/patch-codex-zh-cn.mjs` | 补丁核心逻辑 |
 | `resources/native-menu-zh-CN.json` | 原生菜单中文翻译 |
