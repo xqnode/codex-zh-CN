@@ -47,8 +47,13 @@ powershell.exe -NoProfile -Command ^
 timeout /t 2 /nobreak >nul
 
 echo [2/5] Uninstalling Microsoft Store package OpenAI.Codex...
-powershell.exe -NoProfile -Command ^
-  "$pkg = Get-AppxPackage -Name 'OpenAI.Codex' -ErrorAction SilentlyContinue; if ($pkg) { $pkg | ForEach-Object { Write-Host ('Removing ' + $_.PackageFullName); Remove-AppxPackage -Package $_.PackageFullName } } else { Write-Host 'Store package not found (already removed).' }"
+echo        NOTE: This step often takes 2-5 minutes. It is NOT frozen.
+echo        Windows may show a blue "Deployment operation progress" line - that is normal.
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\uninstall-codex-store.ps1"
+set "STORE_EXIT=%ERRORLEVEL%"
+if not "%STORE_EXIT%"=="0" (
+    echo [warn] Store uninstall reported issues ^(exit %STORE_EXIT%^). Continuing with data cleanup...
+)
 if exist "%ProgramFiles%\WindowsApps\OpenAI.Codex_*" (
     echo [warn] WindowsApps folder may remain until reboot; Store uninstall was attempted.
 )
