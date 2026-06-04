@@ -1,7 +1,8 @@
 {
   "repo": "xqnode/codex-zh-CN",
-  "release": "0.1.0",
+  "release": "0.1.1",
   "supportedCodexVersions": [
-    "26.519.81530"
+    "26.519.81530",
+    "26.601.2237.0"
   ]
 }

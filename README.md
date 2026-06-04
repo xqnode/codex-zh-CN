@@ -3,13 +3,13 @@
 > Windows 版 Codex Desktop 简体中文语言包，一键安装汉化。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Release](https://img.shields.io/badge/release-v0.1.0-green.svg)](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0)
+[![Release](https://img.shields.io/badge/release-v0.1.1-green.svg)](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.1)
 
 一键将 [Codex Desktop](https://github.com/openai/codex) 界面切换为**简体中文**，面向 Windows 用户，操作简单。
 
 ## 快速开始
 
-1. 下载 [Release v0.1.0](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.0) 并解压，或克隆本仓库
+1. 下载 [Release v0.1.1](https://github.com/xqnode/codex-zh-CN/releases/tag/v0.1.1) 的 **Source code (zip)** 并解压，或克隆本仓库
 2. **完全退出** Codex Desktop（任务栏右键退出，不要只关窗口）
 3. 双击 `install-windows.bat`（会先弹出 **UAC 管理员授权**，请点击「是」）
 4. 在交互菜单中选择 **[1] 安装汉化**（若 Codex 正在运行会先自动关闭，汉化完成后自动重启）
