@@ -630,15 +630,25 @@ function launchCodexExecutable(exePath) {
 }
 
 function launchCodexViaScript(scriptPath) {
-  if (scriptPath.toLowerCase().endsWith(".vbs")) {
-    spawnSync("wscript.exe", ["//B", scriptPath], {
-      windowsHide: true,
-      stdio: "ignore",
-      timeout: 15000,
-    });
+  const lower = scriptPath.toLowerCase();
+  if (lower.endsWith(".ps1")) {
+    spawnSync(
+      "powershell.exe",
+      [
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-WindowStyle",
+        "Hidden",
+        "-File",
+        scriptPath,
+        "-Quiet",
+      ],
+      { windowsHide: true, stdio: "ignore", timeout: 15000 }
+    );
     return;
   }
-  spawnSync("cmd.exe", ["/c", scriptPath], {
+  spawnSync("cmd.exe", ["/c", scriptPath, "run"], {
     windowsHide: true,
     stdio: "ignore",
     timeout: 15000,
@@ -647,45 +657,51 @@ function launchCodexViaScript(scriptPath) {
 
 function getInstallLauncherPaths() {
   return {
-    vbs: path.join(projectRoot, "Codex 汉化版.vbs"),
     bat: path.join(projectRoot, "Codex 汉化版.bat"),
+    batAscii: path.join(projectRoot, "launch-codex-zh-cn.bat"),
+    ps1: path.join(projectRoot, "launch-codex-zh-cn.ps1"),
+    legacyVbs: path.join(projectRoot, "Codex 汉化版.vbs"),
   };
 }
 
-function removeStaleDesktopLaunchers() {
-  const desktopDir = path.join(os.homedir(), "Desktop");
-  for (const name of ["Codex 汉化版.vbs", "Codex 汉化版.bat"]) {
-    const target = path.join(desktopDir, name);
-    if (!fs.existsSync(target)) continue;
+function removeStaleLaunchers() {
+  const { legacyVbs } = getInstallLauncherPaths();
+  const staleNames = ["Codex 汉化版.vbs"];
+  const roots = [path.join(os.homedir(), "Desktop"), projectRoot];
+
+  for (const root of roots) {
+    for (const name of staleNames) {
+      const target = path.join(root, name);
+      if (!fs.existsSync(target)) continue;
+      try {
+        fs.unlinkSync(target);
+        logInfo(`已移除旧版 VBS 启动脚本: ${target}`);
+      } catch {
+        logInfo(`请手动删除旧版 VBS 启动脚本: ${target}`);
+      }
+    }
+  }
+
+  if (fs.existsSync(legacyVbs)) {
     try {
-      fs.unlinkSync(target);
-      logInfo(`已移除桌面旧启动脚本: ${target}`);
+      fs.unlinkSync(legacyVbs);
+      logInfo(`已移除旧版 VBS 启动脚本: ${legacyVbs}`);
     } catch {
-      logInfo(`请手动删除桌面上的: ${name}`);
+      logInfo(`请手动删除旧版 VBS 启动脚本: ${legacyVbs}`);
     }
   }
 }
 
 function startCodex(app, patchedRoot, mode) {
-  const { vbs: installVbs, bat: installBat } = getInstallLauncherPaths();
-
-  if (mode === "store-copy") {
-    const exePath = findPatchedCodexExe(app);
-    if (exePath) {
-      launchCodexExecutable(exePath);
-      console.log(`[ok] 汉化完成，已重新启动 Codex: ${exePath}`);
-      console.log(`[codex-launch] ${exePath}`);
-      return;
-    }
-    const scriptLauncher = [installVbs, installBat].find(
-      (candidate) => candidate && fs.existsSync(candidate)
-    );
-    if (scriptLauncher) {
-      launchCodexViaScript(scriptLauncher);
-      console.log(`[ok] 汉化完成，已重新启动 Codex: ${scriptLauncher}`);
-      console.log(`[codex-launch] ${scriptLauncher}`);
-      return;
-    }
+  const { bat: installBat, ps1: installPs1 } = getInstallLauncherPaths();
+  const scriptLauncher = [installBat, installPs1].find(
+    (candidate) => candidate && fs.existsSync(candidate)
+  );
+  if (scriptLauncher) {
+    launchCodexViaScript(scriptLauncher);
+    console.log(`[ok] 汉化完成，已重新启动 Codex: ${scriptLauncher}`);
+    console.log(`[codex-launch] ${scriptLauncher}`);
+    return;
   }
 
   const exePath = findPatchedCodexExe(app);
@@ -693,16 +709,6 @@ function startCodex(app, patchedRoot, mode) {
     launchCodexExecutable(exePath);
     console.log(`[ok] 汉化完成，已重新启动 Codex: ${exePath}`);
     console.log(`[codex-launch] ${exePath}`);
-    return;
-  }
-
-  const scriptLauncher = [installVbs, installBat].find(
-    (candidate) => candidate && fs.existsSync(candidate)
-  );
-  if (scriptLauncher) {
-    launchCodexViaScript(scriptLauncher);
-    console.log(`[ok] 汉化完成，已重新启动 Codex: ${scriptLauncher}`);
-    console.log(`[codex-launch] ${scriptLauncher}`);
     return;
   }
 
@@ -1276,21 +1282,38 @@ function writePatchedLauncher(patchedApp) {
   }
 
   const launchersDir = path.join(projectRoot, "launchers");
-  const templateVbs = path.join(launchersDir, "Codex 汉化版.vbs");
   const templateBat = path.join(launchersDir, "Codex 汉化版.bat");
-  if (!fs.existsSync(templateVbs) || !fs.existsSync(templateBat)) {
-    throw new Error("缺少 launchers/Codex 汉化版.vbs 或 .bat 模板文件。");
+  const templateBatAscii = path.join(launchersDir, "launch-codex-zh-cn.bat");
+  const templatePs1 = path.join(launchersDir, "launch-codex-zh-cn.ps1");
+  if (
+    !fs.existsSync(templateBat) ||
+    !fs.existsSync(templateBatAscii) ||
+    !fs.existsSync(templatePs1)
+  ) {
+    throw new Error(
+      "缺少 launchers/Codex 汉化版.bat、launch-codex-zh-cn.bat 或 launch-codex-zh-cn.ps1 模板文件。"
+    );
   }
 
-  const { vbs: installVbs, bat: installBat } = getInstallLauncherPaths();
-  fs.copyFileSync(templateVbs, installVbs);
+  const { bat: installBat, batAscii: installBatAscii, ps1: installPs1, legacyVbs } =
+    getInstallLauncherPaths();
+  removeStaleLaunchers();
   fs.copyFileSync(templateBat, installBat);
-  removeStaleDesktopLaunchers();
+  fs.copyFileSync(templateBatAscii, installBatAscii);
+  fs.copyFileSync(templatePs1, installPs1);
+  if (fs.existsSync(legacyVbs)) {
+    try {
+      fs.unlinkSync(legacyVbs);
+    } catch {
+      logInfo(`请手动删除旧版 VBS 启动脚本: ${legacyVbs}`);
+    }
+  }
 
-  logOk(`汉化版启动脚本已写入安装目录: ${installVbs}`);
-  logOk(`备用启动脚本: ${installBat}`);
+  logOk(`汉化版启动入口: ${installBat}`);
+  logOk(`备用启动入口: ${installBatAscii}`);
+  logOk(`PowerShell 启动脚本: ${installPs1}`);
   console.log(
-    `[info] 请在本目录双击「Codex 汉化版.vbs」启动（与 install-windows.bat 同目录）；勿用 Store 原版快捷方式。`
+    `[info] 请在本目录双击「Codex 汉化版.bat」启动（与 install-windows.bat 同目录）；勿用 Store 原版快捷方式。`
   );
 }
 
@@ -1738,11 +1761,11 @@ function buildStatusReport(options) {
     );
     if (isWindowsAppsInstall(installInfo.app)) {
       report.messages.push(
-        "检测到 Microsoft Store 安装：将在 %USERPROFILE%\\.codex\\zh-cn-patched\\ 维护可写副本；请用安装目录下的「Codex 汉化版.vbs」启动。"
+        "检测到 Microsoft Store 安装：将在 %USERPROFILE%\\.codex\\zh-cn-patched\\ 维护可写副本；请用安装目录下的「Codex 汉化版.bat」启动。"
       );
-      const { vbs: launcher } = getInstallLauncherPaths();
+      const { bat: launcher } = getInstallLauncherPaths();
       if (fs.existsSync(launcher)) {
-        report.messages.push(`汉化启动脚本: ${launcher}`);
+        report.messages.push(`汉化启动入口: ${launcher}`);
       }
     }
   } catch (error) {

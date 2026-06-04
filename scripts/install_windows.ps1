@@ -230,7 +230,7 @@ function Invoke-PatchAction {
             }
         }
         if (-not $launched) {
-            Write-InfoLine "汉化已完成；若 Codex 未自动打开，请双击与 install-windows.bat 同目录下的「Codex 汉化版.vbs」启动。"
+            Write-InfoLine "汉化已完成；若 Codex 未自动打开，请双击与 install-windows.bat 同目录下的「Codex 汉化版.bat」启动。"
         }
     }
 }

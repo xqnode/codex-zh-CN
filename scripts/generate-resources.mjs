@@ -120,7 +120,7 @@ fs.writeFileSync(
   JSON.stringify(
     {
       repo: "YOUR_GITHUB_USER/codex-zh-CN",
-      release: "0.1.1",
+      release: "0.1.2",
       supportedCodexVersions: ["26.519.81530"],
     },
     null,

@@ -4,6 +4,8 @@ install-windows.log
 *.log
 .DS_Store
 Thumbs.db
-/Codex 汉化版.vbs
 /Codex 汉化版.bat
+/launch-codex-zh-cn.bat
+/launch-codex-zh-cn.ps1
+/Codex 汉化版.vbs
 codex-zh-CN-v*.zip

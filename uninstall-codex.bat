@@ -61,8 +61,11 @@ if exist "%ProgramFiles%\WindowsApps\OpenAI.Codex_*" (
 echo [3/5] Removing launcher scripts...
 if exist "%~dp0Codex 汉化版.vbs" del /f /q "%~dp0Codex 汉化版.vbs" >nul 2>&1
 if exist "%~dp0Codex 汉化版.bat" del /f /q "%~dp0Codex 汉化版.bat" >nul 2>&1
+if exist "%~dp0launch-codex-zh-cn.ps1" del /f /q "%~dp0launch-codex-zh-cn.ps1" >nul 2>&1
+if exist "%~dp0launch-codex-zh-cn.bat" del /f /q "%~dp0launch-codex-zh-cn.bat" >nul 2>&1
 if exist "%USERPROFILE%\Desktop\Codex 汉化版.vbs" del /f /q "%USERPROFILE%\Desktop\Codex 汉化版.vbs" >nul 2>&1
 if exist "%USERPROFILE%\Desktop\Codex 汉化版.bat" del /f /q "%USERPROFILE%\Desktop\Codex 汉化版.bat" >nul 2>&1
+if exist "%USERPROFILE%\Desktop\launch-codex-zh-cn.ps1" del /f /q "%USERPROFILE%\Desktop\launch-codex-zh-cn.ps1" >nul 2>&1
 
 echo [4/5] Removing user data directories...
 call :RemoveDir "%USERPROFILE%\.codex"
